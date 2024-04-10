@@ -1,19 +1,34 @@
 document.addEventListener('DOMContentLoaded', () => {
+    //console.log("load called");
     const loadCarsBtn = document.getElementById('loadCarsBtn');
     const carList = document.getElementById('carList');
-    let cars = [];
+    cars = [];
     loadCarsBtn.addEventListener('click', () => {
-        fetch('https://<your-azure-function-app-name>.azurewebsites.net/api/cars')
+        fetch('/api/message', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({key:"get"})
+        })
             .then(response => response.json())
             .then(data => {
-                cars = data;
+                console.log('Success:', data);
+                //reload cars
+                // const loadCarsBtn = document.getElementById('loadCarsBtn');
+                //loadCarsBtn.click();
+                console.log("received");
+                console.log(data);
+                cars = data.text;
                 carList.innerHTML = '';
-                data.forEach((car, index) => {
+                data.text.forEach((car, index) => {
                     const carCard = document.createElement('div');
                     carCard.classList.add('car-card');
                     carCard.innerHTML = `
                         <h2>${car.make} ${car.model}</h2>
                         <p><strong>Year:</strong> ${car.year}</p>
+                        <p><strong>Make:</strong> ${car.make}</p>
+                        <p><strong>Model:</strong> ${car.model}</p>
                         <p><strong>Price:</strong> R${car.price}</p>
                         <button class="btn btn-remove" data-index="${index}">Remove</button>
                     `;
@@ -21,37 +36,80 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             })
             .catch(error => {
-                console.error('Error fetching car data:', error);
+                console.error('Error:', error);
             });
     });
+    
 });
-
 function addCar(newCar) {
-    fetch('https://<your-azure-function-app-name>.azurewebsites.net/api/cars', {
+    fetch('/api/message', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify(newCar)
+        body: JSON.stringify({one:newCar,key:"add"})
     })
         .then(response => response.json())
         .then(data => {
             console.log('Success:', data);
-            document.getElementById('loadCarsBtn').click();
+            //reload cars
+            // const loadCarsBtn = document.getElementById('loadCarsBtn');
+            loadCarsBtn.click();
         })
         .catch(error => {
             console.error('Error:', error);
         });
 }
 
-const carForm = document.getElementById('carForm');
 carForm.addEventListener('submit', event => {
     event.preventDefault();
     const make = document.getElementById('make').value;
     const model = document.getElementById('model').value;
     const year = document.getElementById('year').value;
     const price = document.getElementById('price').value;
+    addCar({ make, model, year, price });
+    carForm.reset();
+});
 
-    const newCar = { make, model, year, price };
-    addCar(newCar);
+// Function to remove a car
+function removeCar(index) {
+    const carId = cars[index].id;
+    fetch('/api/message', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({one:carId,key:"delete"})
+    })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Success:', data);
+            //reload cars
+            // const loadCarsBtn = document.getElementById('loadCarsBtn');
+            loadCarsBtn.click();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    //##############################
+    // fetch(`api/message/`, {
+    //     method: 'DELETE'
+    // })
+    //     .then(response => response.json())
+    //     .then(data => {
+    //         console.log('Success:', data);
+    //         //reload cars
+    //         // const loadCarsBtn = document.getElementById('loadCarsBtn');
+    //         loadCarsBtn.click();
+    //     })
+    //     .catch(error => {
+    //         console.error('Error:', error);
+    //     });
+}
+// Event delegation for remove buttons
+carList.addEventListener('click', event => {
+    if (event.target.classList.contains('btn-remove')) {
+        const index = event.target.dataset.index;
+        removeCar(index);
+    }
 });
