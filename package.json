@@ -2,7 +2,7 @@
   "name": "vanilla-basic",
   "version": "1.0.0",
   "scripts": {
-    "start": "swa start src --api-location api"
+    "start": "node index.js"
   },
   "dependencies": {
     "cors": "^2.8.5"
