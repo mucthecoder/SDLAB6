@@ -1,27 +1,14 @@
 document.addEventListener('DOMContentLoaded', () => {
-    //console.log("load called");
     const loadCarsBtn = document.getElementById('loadCarsBtn');
     const carList = document.getElementById('carList');
     cars = [];
     loadCarsBtn.addEventListener('click', () => {
-        fetch('/api/message', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({key:"get"})
-        })
+        fetch('http://localhost:3001/cars')
             .then(response => response.json())
             .then(data => {
-                console.log('Success:', data);
-                //reload cars
-                // const loadCarsBtn = document.getElementById('loadCarsBtn');
-                //loadCarsBtn.click();
-                console.log("received");
-                console.log(data);
-                cars = data.text;
+                cars = data;
                 carList.innerHTML = '';
-                data.text.forEach((car, index) => {
+                data.forEach((car, index) => {
                     const carCard = document.createElement('div');
                     carCard.classList.add('car-card');
                     carCard.innerHTML = `
@@ -36,18 +23,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             })
             .catch(error => {
-                console.error('Error:', error);
+                console.error('Error fetching car data:', error);
             });
     });
-    
 });
 function addCar(newCar) {
-    fetch('/api/message', {
+    fetch('http://localhost:3001/cars', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({one:newCar,key:"add"})
+        body: JSON.stringify(newCar)
     })
         .then(response => response.json())
         .then(data => {
@@ -74,12 +60,8 @@ carForm.addEventListener('submit', event => {
 // Function to remove a car
 function removeCar(index) {
     const carId = cars[index].id;
-    fetch('/api/message', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({one:carId,key:"delete"})
+    fetch(`http://localhost:3001/cars/${carId}`, {
+        method: 'DELETE'
     })
         .then(response => response.json())
         .then(data => {
@@ -91,20 +73,6 @@ function removeCar(index) {
         .catch(error => {
             console.error('Error:', error);
         });
-    //##############################
-    // fetch(`api/message/`, {
-    //     method: 'DELETE'
-    // })
-    //     .then(response => response.json())
-    //     .then(data => {
-    //         console.log('Success:', data);
-    //         //reload cars
-    //         // const loadCarsBtn = document.getElementById('loadCarsBtn');
-    //         loadCarsBtn.click();
-    //     })
-    //     .catch(error => {
-    //         console.error('Error:', error);
-    //     });
 }
 // Event delegation for remove buttons
 carList.addEventListener('click', event => {
