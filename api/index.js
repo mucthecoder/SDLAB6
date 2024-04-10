@@ -1,53 +1,43 @@
-//create cars api using express
-const express = require('express');
-const app = express();
-
-var cors=require('cors');
-app.use(cors());
-
-app.use(express.json());
-
 const cars = require('./cars.json');
 
-//get all cars
-app.get('/cars', (req, res) => {
-    res.json(cars);
-});
+module.exports = async function (context, req) {
+    context.log('JavaScript HTTP trigger function processed a request.');
 
-//get car by id
-app.get('/cars/:id', (req, res) => {
-    const id = req.params.id;
-    const car = cars.find(car => car.id === parseInt(id));
-    res.json(car);
-});
+    // Update car
+    if (req.method === 'PUT' && req.query.id) {
+        const id = parseInt(req.query.id);
+        const updatedCar = req.body;
+        const index = cars.findIndex(car => car.id === id);
+        cars[index] = updatedCar;
+        context.res = {
+            body: updatedCar
+        };
+    }
 
-//update car
-app.put('/cars/:id', (req, res) => {
-    const id = req.params.id;
-    const updatedCar = req.body;
-    const index = cars.findIndex(car => car.id === parseInt(id));
-    cars[index] = updatedCar;
-    res.json(updatedCar);
-});
+    // Add car
+    else if (req.method === 'POST') {
+        const newCar = req.body;
+        cars.push(newCar);
+        context.res = {
+            body: newCar
+        };
+    }
 
-//delete car
-app.delete('/cars/:id', (req, res) => {
-    const id = req.params.id;
-    const index = cars.findIndex(car => car.id === parseInt(id));
-    cars.splice(index, 1);
-    res.json({ message: `Car with id ${id} deleted` });
-});
+    // Delete car
+    else if (req.method === 'DELETE' && req.query.id) {
+        const id = parseInt(req.query.id);
+        const index = cars.findIndex(car => car.id === id);
+        cars.splice(index, 1);
+        context.res = {
+            body: { message: `Car with id ${id} deleted` }
+        };
+    }
 
-//add car
-app.post('/cars', (req, res) => {
-    console.log(req);
-    const newCar = req.body;
-    console.log(newCar);
-    cars.push(newCar);
-    res.json(newCar);
-});
-
-//start app at localhost:3001
-app.listen(3001, () => {
-    console.log('Server started at http://localhost:3001');
-});
+    // If no method matches, return a 400 Bad Request
+    else {
+        context.res = {
+            status: 400,
+            body: "Request method not supported."
+        };
+    }
+};
