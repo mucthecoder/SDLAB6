@@ -28,12 +28,12 @@ module.exports = async function (context, req) {
         });
     }
     else if(req.body.key==="add"){
-        let carw=req.body.one;
+        let cari=req.body.one;
         let c={
-            make:carw.make,
-            model:carw.model,
-            year:carw.year,
-            price:carw.price,
+            make:cari.make,
+            model:cari.model,
+            year:cari.year,
+            price:cari.price,
             id:next_ind
         };
         next_ind++;
